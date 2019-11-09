@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import styled from 'styled-components';
 
 const Wrapper = styled.header`
@@ -9,7 +9,7 @@ const Wrapper = styled.header`
 const Title = styled.h1`
   padding: 20px;
   margin: 0px;
-  text-align: center
+  text-align: center;
 `;
 
 const Header = () => {
@@ -17,7 +17,7 @@ const Header = () => {
     <Wrapper>
       <Title>Welcome to Todo</Title>
     </Wrapper>
-  )
-}
+  );
+};
 
 export default Header;
