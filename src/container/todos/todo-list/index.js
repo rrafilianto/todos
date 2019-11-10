@@ -1,83 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Grid, Card, Icon, Button, Label, Form } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
-import {
-  apiTodoList,
-  apiTodoDelete
-} from '../../../utils/services/api-service';
 import ErrorModal from '../../../components/modals/error-modal';
 import SuccessModal from '../../../components/modals/success-modal';
 import ConfirmModal from '../../../components/modals/confirm-modal';
+import useList from './list-hook';
+import PlaceholderList from '../../../components/placeholder/placeholder-list';
 
 const ListTodo = () => {
-  const [listTodo, setListTodo] = useState([]);
-  const [isOpenErrorModal, setOpenErrorModal] = useState(false);
-  const [isOpenSuccessModal, setOpenSuccessModal] = useState(false);
-  const [isOpenConfirmModal, setOpenConfirmModal] = useState(false);
-  const [messageModal, setMessageModal] = useState('');
-  const [radioChecked, setRadioChecked] = useState('All');
-  const [idTodo, setIdTodo] = useState(null);
-  const [limit, setLimit] = useState(10);
-
-  const getListTodo = () => {
-    const params = {
-      filter: radioChecked,
-      limit: limit || 0
-    };
-
-    setListTodo([]);
-
-    apiTodoList(params)
-      .then(response => {
-        const { data } = response.data;
-        setListTodo(data);
-      })
-      .catch(error => {
-        const { message } = error.response.data.data;
-
-        setOpenErrorModal(true);
-        setMessageModal(message);
-      });
-  };
-
-  const deleteTodo = () => {
-    apiTodoDelete(idTodo)
-      .then(() => {
-        setOpenConfirmModal(false);
-        getListTodo();
-      })
-      .catch(error => {
-        const { message } = error.response.data.data;
-
-        setOpenErrorModal(true);
-        setMessageModal(message);
-      });
-  };
-
-  const changeRadio = (e, { value }) => {
-    setRadioChecked(value);
-  };
-
-  const changeLimit = (e, { value }) => {
-    setLimit(value);
-  };
-
-  const handleDeleteTodo = id => {
-    setIdTodo(id);
-    setOpenConfirmModal(true);
-  };
-
-  useEffect(() => {
-    getListTodo();
-  }, [radioChecked, limit]);
+  const {
+    handleDeleteTodo,
+    handleConfirmModal,
+    handleChangeLimit,
+    handleChangeRadio,
+    handleDirectLink,
+    isOpenSuccessModal,
+    isOpenErrorModal,
+    isOpenConfirmModal,
+    messageModal,
+    listTodo,
+    isFetching,
+    closeModal,
+    radioChecked,
+    limit
+  } = useList();
 
   return (
     <>
       <section>
         <Grid>
-          <Link to="/create">
-            <Button>New Todo</Button>
-          </Link>
+          <Button onClick={() => handleDirectLink('/create')}>New Todo</Button>
         </Grid>
       </section>
 
@@ -85,24 +36,24 @@ const ListTodo = () => {
         <Grid centered>
           <Form>
             <Form.Group inline>
-              <label>Filter: </label>
+              <label>Status: </label>
               <Form.Radio
                 label="Done"
                 value="done"
                 checked={radioChecked === 'done'}
-                onChange={changeRadio}
+                onChange={handleChangeRadio}
               />
               <Form.Radio
                 label="Undone"
                 value="undone"
                 checked={radioChecked === 'undone'}
-                onChange={changeRadio}
+                onChange={handleChangeRadio}
               />
               <Form.Radio
                 label="All"
                 value="all"
                 checked={radioChecked === 'all'}
-                onChange={changeRadio}
+                onChange={handleChangeRadio}
               />
             </Form.Group>
             <Form.Group inline>
@@ -111,7 +62,7 @@ const ListTodo = () => {
                 type="number"
                 placeholder="Limit"
                 value={limit}
-                onChange={changeLimit}
+                onChange={handleChangeLimit}
               />
             </Form.Group>
           </Form>
@@ -119,64 +70,67 @@ const ListTodo = () => {
       </section>
 
       <section>
-        <Grid divided="vertically">
-          <Grid.Row columns={2}>
-            {listTodo.map(({ id, isDone, note, priority, title }) => {
-              return (
-                <Grid.Column key={id}>
-                  <Card fluid>
-                    <div style={{ margin: '5px 13px ', width: 10 }}>
-                      <Label color="red" ribbon>
-                        Priority: {priority}
-                      </Label>
-                    </div>
-                    <Card.Content header={title} textAlign="center" />
-                    <Card.Content description={note} textAlign="center" />
-                    <Card.Content extra>
-                      <Label color="blue" image>
-                        <Icon name="info" />
-                        {isDone ? 'Done' : 'Not Done'}
-                      </Label>
-                      <Button.Group floated="right">
-                        <Link to={`/edit/${id}`}>
+        {isFetching ? (
+          <PlaceholderList />
+        ) : (
+          <Grid divided="vertically">
+            <Grid.Row columns={2}>
+              {listTodo.map(({ id, isDone, note, priority, title }) => {
+                return (
+                  <Grid.Column key={id}>
+                    <Card fluid>
+                      <div style={{ margin: '5px 13px ', width: 10 }}>
+                        <Label color="red" ribbon>
+                          Priority: {priority}
+                        </Label>
+                      </div>
+                      <Card.Content header={title} textAlign="center" />
+                      <Card.Content description={note} textAlign="center" />
+                      <Card.Content extra>
+                        <Label color="blue" image>
+                          <Icon name="info" />
+                          {isDone ? 'Done' : 'Not Done'}
+                        </Label>
+                        <Button.Group floated="right">
                           <Button
                             size="mini"
                             content="Edit"
                             icon="signup"
+                            onClick={() => handleDirectLink(`/edit/${id}`)}
                             positive
                           />
-                        </Link>
-                        <Button
-                          size="mini"
-                          content="Delete"
-                          icon="delete"
-                          negative
-                          onClick={() => handleDeleteTodo(id)}
-                        />
-                      </Button.Group>
-                    </Card.Content>
-                  </Card>
-                </Grid.Column>
-              );
-            })}
-          </Grid.Row>
-        </Grid>
+                          <Button
+                            size="mini"
+                            content="Delete"
+                            icon="delete"
+                            negative
+                            onClick={() => handleConfirmModal(id)}
+                          />
+                        </Button.Group>
+                      </Card.Content>
+                    </Card>
+                  </Grid.Column>
+                );
+              })}
+            </Grid.Row>
+          </Grid>
+        )}
       </section>
 
       <ErrorModal
         content={messageModal}
         open={isOpenErrorModal}
-        handleClose={() => setOpenErrorModal(!isOpenErrorModal)}
+        handleClose={() => closeModal('error')}
       />
       <SuccessModal
         content={messageModal}
         open={isOpenSuccessModal}
-        handleClose={() => setOpenSuccessModal(!isOpenSuccessModal)}
+        handleClose={() => closeModal('success')}
       />
       <ConfirmModal
         open={isOpenConfirmModal}
-        handleClose={() => setOpenConfirmModal(!isOpenConfirmModal)}
-        handleConfirm={() => deleteTodo()}
+        handleClose={() => closeModal('confirm')}
+        handleConfirm={() => handleDeleteTodo()}
       />
     </>
   );

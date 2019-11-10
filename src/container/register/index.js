@@ -1,40 +1,27 @@
-import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React from 'react';
 import { Formik } from 'formik';
 import { Button, Form, Label } from 'semantic-ui-react';
 import { RegisterSchema } from '../../utils/schema/register-schema';
-import { apiRegister } from '../../utils/services/api-service';
 import ErrorModal from '../../components/modals/error-modal';
 import SuccessModal from '../../components/modals/success-modal';
+import useRegister from './register-hook';
 
 const Register = () => {
-  const [isOpenErrorModal, setOpenErrorModal] = useState(false);
-  const [isOpenSuccessModal, setOpenSuccessModal] = useState(false);
-  const [messageModal, setMessageModal] = useState('');
-  const history = useHistory();
-
-  const onSubmitRegister = values => {
-    apiRegister(values)
-      .then(response => {
-        const { message } = response.data.data;
-
-        setOpenSuccessModal(true);
-        setMessageModal(message);
-      })
-      .catch(error => {
-        const { message } = error.response.data.data;
-
-        setOpenErrorModal(true);
-        setMessageModal(message);
-      });
-  };
+  const {
+    handleSubmitRegister,
+    isOpenErrorModal,
+    isOpenSuccessModal,
+    closeSuccessModal,
+    closeErrorModal,
+    messageModal
+  } = useRegister();
 
   return (
     <section>
       <Formik
         initialValues={{ name: '', email: '', password: '' }}
         validationSchema={RegisterSchema}
-        onSubmit={values => onSubmitRegister(values)}
+        onSubmit={values => handleSubmitRegister(values)}
       >
         {({
           values,
@@ -108,12 +95,12 @@ const Register = () => {
       <ErrorModal
         content={messageModal}
         open={isOpenErrorModal}
-        handleClose={() => setOpenErrorModal(!isOpenErrorModal)}
+        handleClose={() => closeErrorModal()}
       />
       <SuccessModal
         content={messageModal}
         open={isOpenSuccessModal}
-        handleClose={() => history.push('/')}
+        handleClose={() => closeSuccessModal()}
       />
     </section>
   );

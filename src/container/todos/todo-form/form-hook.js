@@ -57,13 +57,13 @@ const useCreateTodo = () => {
       });
   };
 
-  const handleSuccessModal = () => {
-    setOpenSuccessModal(!isOpenSuccessModal);
-    return history.push('/list');
-  };
-
-  const handleErrorModal = () => {
-    setOpenErrorModal(!isOpenErrorModal);
+  const closeModal = key => {
+    if (key === 'error') {
+      setOpenErrorModal(false);
+    } else {
+      setOpenSuccessModal(false);
+      return history.push('/list');
+    }
   };
 
   useEffect(() => {
@@ -78,8 +78,7 @@ const useCreateTodo = () => {
   return {
     handleSubmitTodo: id ? handleUpdateTodo : handleCreateTodo,
     isFetching,
-    handleSuccessModal,
-    handleErrorModal,
+    closeModal,
     formDataTodo,
     isOpenErrorModal,
     isOpenSuccessModal,

@@ -1,31 +1,18 @@
-import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Formik } from 'formik';
 import { Button, Divider, Form, Grid, Segment, Label } from 'semantic-ui-react';
-import { apiLogin } from '../../utils/services/api-service';
 import { LoginSchema } from '../../utils/schema/login-schema';
 import ErrorModal from '../../components/modals/error-modal';
-import auth from '../../utils/services/authentication-service';
+import useLogin from './login-hook';
 
 const Login = () => {
-  const [isOpenErrorModal, setOpenErrorModal] = useState(false);
-  const [messageModal, setMessageModal] = useState('');
-  const history = useHistory();
-
-  const onSubmitLogin = value => {
-    apiLogin(value)
-      .then(response => {
-        const { token } = response.data.data;
-        auth.setToken(token);
-        return history.push('/list');
-      })
-      .catch(error => {
-        const { message } = error.response.data.data;
-
-        setOpenErrorModal(true);
-        setMessageModal(message);
-      });
-  };
+  const {
+    handleSubmitLogin,
+    closeErrorModal,
+    isOpenErrorModal,
+    messageModal
+  } = useLogin();
 
   return (
     <section>
@@ -35,7 +22,7 @@ const Login = () => {
             <Formik
               initialValues={{ email: '', password: '' }}
               validationSchema={LoginSchema}
-              onSubmit={values => onSubmitLogin(values)}
+              onSubmit={values => handleSubmitLogin(values)}
             >
               {({
                 values,
@@ -102,7 +89,7 @@ const Login = () => {
       <ErrorModal
         content={messageModal}
         open={isOpenErrorModal}
-        handleClose={() => setOpenErrorModal(!isOpenErrorModal)}
+        handleClose={() => closeErrorModal()}
       />
     </section>
   );

@@ -5,13 +5,13 @@ import { TodoSchema } from '../../../utils/schema/todo-schema';
 import ErrorModal from '../../../components/modals/error-modal';
 import SuccessModal from '../../../components/modals/success-modal';
 import useCreateTodo from './form-hook';
+import PlaceholderForm from '../../../components/placeholder/placeholder-form';
 
 const FormTodo = () => {
   const {
     handleSubmitTodo,
     isFetching,
-    handleSuccessModal,
-    handleErrorModal,
+    closeModal,
     formDataTodo,
     isOpenErrorModal,
     isOpenSuccessModal,
@@ -22,7 +22,9 @@ const FormTodo = () => {
 
   return (
     <section>
-      {!isFetching && (
+      {isFetching ? (
+        <PlaceholderForm />
+      ) : (
         <Formik
           initialValues={{
             title: title || '',
@@ -103,12 +105,12 @@ const FormTodo = () => {
       <ErrorModal
         content={messageModal}
         open={isOpenErrorModal}
-        handleClose={() => handleErrorModal()}
+        handleClose={() => closeModal('error')}
       />
       <SuccessModal
         content={messageModal}
         open={isOpenSuccessModal}
-        handleClose={() => handleSuccessModal()}
+        handleClose={() => closeModal('success')}
       />
     </section>
   );
