@@ -4,6 +4,7 @@ import styled from 'styled-components';
 const Wrapper = styled.header`
   background: #fff;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 8px 0px;
+  margin-bottom: 50px;
 `;
 
 const Title = styled.h1`
